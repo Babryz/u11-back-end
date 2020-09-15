@@ -3,4 +3,8 @@ const Schema = mongoose.Schema;
 
 const orderSchema = new Schema({
   items: Array,
+  date: Date,
+  userId: String,
 });
+
+module.exports = mongoose.model("Order", orderSchema);
