@@ -5,6 +5,7 @@ const userSchema = new Schema({
   username: String,
   email: String,
   password: String,
+  admin: Boolean,
   cart: Array,
 });
 
