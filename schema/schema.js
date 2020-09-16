@@ -1,4 +1,5 @@
 const graphql = require("graphql");
+const bcrypt = require("bcrypt");
 const User = require("../models/user");
 
 const {
@@ -48,19 +49,18 @@ const Mutation = new GraphQLObjectType({
         const existentUser = await User.findOne({ email });
         try {
           if (!existentUser) {
+            const hashedPassword = await bcrypt.hash(password, 10);
+
             let user = new User({
               username: username,
               email: email,
-              password: password,
+              password: hashedPassword,
               admin: false,
             });
 
             return await user.save();
           } else {
-            return {
-              message:
-                "There already exists a user with that email. Try log in instead.",
-            };
+            return null;
           }
         } catch (error) {
           return { error: error };

@@ -7,6 +7,7 @@ const schema = require("./schema/schema");
 const app = express();
 
 app.use(cors());
+app.use(express.json());
 
 const MongoDB =
   "mongodb+srv://BabryzDev:1dJEwPdI0IxiLcT7@privatecluster-dfosw.mongodb.net/u11-db?retryWrites=true&w=majority";
