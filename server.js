@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+require("dotenv").config();
 const { graphqlHTTP } = require("express-graphql");
 const cors = require("cors");
 const schema = require("./schema/schema");
@@ -9,10 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const MongoDB =
-  "mongodb+srv://BabryzDev:1dJEwPdI0IxiLcT7@privatecluster-dfosw.mongodb.net/u11-db?retryWrites=true&w=majority";
-
-mongoose.connect(MongoDB, {
+mongoose.connect(process.env.MONGODB_TOKEN, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
