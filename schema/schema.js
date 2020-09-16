@@ -67,6 +67,24 @@ const Mutation = new GraphQLObjectType({
         }
       },
     },
+    login: {
+      type: UserType,
+      args: {
+        email: { type: new GraphQLNonNull(GraphQLString) },
+        password: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, args) {
+        const { email, password } = args;
+        const user = await User.findOne({ email });
+        try {
+          if (user) {
+            if (await bcrypt.compare(password, user.password)) {
+              return user;
+            }
+          }
+        } catch (error) {}
+      },
+    },
   },
 });
 
