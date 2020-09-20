@@ -148,6 +148,18 @@ const Mutation = new GraphQLObjectType({
         } catch (error) {}
       },
     },
+    deleteUser: {
+      type: UserType,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, args) {
+        try {
+          const user = await User.findByIdAndDelete(args.id);
+          return user;
+        } catch (error) {}
+      },
+    },
     addProduct: {
       type: ProductType,
       args: {
