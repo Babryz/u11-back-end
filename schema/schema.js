@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const Product = require("../models/product");
+const Order = require("../models/order");
 
 const {
   GraphQLObjectType,
@@ -53,6 +54,16 @@ const CartType = new GraphQLObjectType({
     name: { type: GraphQLString },
     price: { type: GraphQLFloat },
     quantity: { type: GraphQLInt },
+  }),
+});
+
+const OrderType = new GraphQLObjectType({
+  name: "Order",
+  fields: () => ({
+    id: { type: GraphQLID },
+    userId: { type: GraphQLID },
+    date: { type: GraphQLString },
+    items: { type: GraphQLList(CartType) },
   }),
 });
 
@@ -262,6 +273,23 @@ const Mutation = new GraphQLObjectType({
       },
       resolve(parent, args) {
         return User.findByIdAndUpdate(args.id, { cart: [] }, { new: true });
+      },
+    },
+    order: {
+      type: OrderType,
+      args: {
+        userId: { type: new GraphQLNonNull(GraphQLID) },
+      },
+      async resolve(parent, args) {
+        const user = await User.findById(args.userId);
+
+        let order = new Order({
+          userId: user.id,
+          date: new Date(),
+          items: user.cart,
+        });
+
+        return order.save();
       },
     },
   },

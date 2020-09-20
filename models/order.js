@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const orderSchema = new Schema({
   items: Array,
-  date: Date,
+  date: String,
   userId: String,
 });
 
