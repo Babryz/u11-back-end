@@ -160,6 +160,29 @@ const Mutation = new GraphQLObjectType({
         } catch (error) {}
       },
     },
+    updateUser: {
+      type: UserType,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLString) },
+        username: { type: new GraphQLNonNull(GraphQLString) },
+        password: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, args) {
+        const { id, username, password } = args;
+        const hashedPassword = await bcrypt.hash(password, 10);
+        try {
+          const user = await User.findByIdAndUpdate(
+            args.id,
+            {
+              username: username,
+              password: hashedPassword,
+            },
+            { new: true }
+          );
+          return user.save();
+        } catch (error) {}
+      },
+    },
     addProduct: {
       type: ProductType,
       args: {

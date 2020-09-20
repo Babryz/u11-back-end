@@ -18,6 +18,7 @@ app.use(express.json());
 mongoose.connect(process.env.MONGODB_TOKEN, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  useFindAndModify: false,
 });
 mongoose.connection.once("open", () => {
   console.log("MongoDB connected and ready to fire!");
