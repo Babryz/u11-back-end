@@ -139,7 +139,7 @@ const Mutation = new GraphQLObjectType({
         email: { type: new GraphQLNonNull(GraphQLString) },
         password: { type: new GraphQLNonNull(GraphQLString) },
       },
-      async resolve(parent, args, { res }) {
+      async resolve(parent, args) {
         const { email, password } = args;
         const existentuser = await User.findOne({ email });
         try {
@@ -243,7 +243,6 @@ const Mutation = new GraphQLObjectType({
         if (alreadyInCart.length > 0) {
           return user;
         } else {
-          console.log("We got to else");
           const cartItem = {
             itemId,
             name,
@@ -253,7 +252,7 @@ const Mutation = new GraphQLObjectType({
           user.cart.push(cartItem);
         }
 
-        return user;
+        return user.save();
       },
     },
     deleteCart: {
