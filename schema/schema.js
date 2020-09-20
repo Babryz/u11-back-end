@@ -184,7 +184,7 @@ const Mutation = new GraphQLObjectType({
         const hashedPassword = await bcrypt.hash(password, 10);
         try {
           const user = await User.findByIdAndUpdate(
-            args.id,
+            id,
             {
               username: username,
               password: hashedPassword,
@@ -236,15 +236,24 @@ const Mutation = new GraphQLObjectType({
       async resolve(parent, args) {
         const { id, itemId, name, price, quantity } = args;
         const user = await User.findById(id);
+        const alreadyInCart = user.cart.filter(
+          (item) => item.itemId === itemId
+        );
 
-        const cartItem = {
-          itemId,
-          name,
-          price,
-          quantity,
-        };
-        user.cart.push(cartItem);
-        return user.save();
+        if (alreadyInCart.length > 0) {
+          return user;
+        } else {
+          console.log("We got to else");
+          const cartItem = {
+            itemId,
+            name,
+            price,
+            quantity,
+          };
+          user.cart.push(cartItem);
+        }
+
+        return user;
       },
     },
   },
