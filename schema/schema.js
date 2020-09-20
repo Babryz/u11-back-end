@@ -1,5 +1,6 @@
 const graphql = require("graphql");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 
 const {
@@ -19,6 +20,14 @@ const UserType = new GraphQLObjectType({
     username: { type: GraphQLString },
     email: { type: GraphQLString },
     admin: { type: GraphQLBoolean },
+    accessToken: { type: GraphQLString },
+  }),
+});
+
+const AccessType = new GraphQLObjectType({
+  name: "Access",
+  fields: () => ({
+    accessToken: { type: GraphQLString },
   }),
 });
 
@@ -27,9 +36,13 @@ const RootQuery = new GraphQLObjectType({
   fields: () => ({
     users: {
       type: new GraphQLList(UserType),
-      resolve(parent, args) {
+      resolve() {
         return User.find({});
       },
+    },
+    user: {
+      type: UserType,
+      resolve(parent, args) {},
     },
   }),
 });
@@ -68,17 +81,26 @@ const Mutation = new GraphQLObjectType({
       },
     },
     login: {
-      type: UserType,
+      type: AccessType,
       args: {
         email: { type: new GraphQLNonNull(GraphQLString) },
         password: { type: new GraphQLNonNull(GraphQLString) },
       },
-      async resolve(parent, args) {
+      async resolve(parent, args, { res }) {
         const { email, password } = args;
-        const user = await User.findOne({ email });
+        const existentuser = await User.findOne({ email });
         try {
-          if (user) {
-            if (await bcrypt.compare(password, user.password)) {
+          if (existentuser) {
+            if (await bcrypt.compare(password, existentuser.password)) {
+              const user = {
+                id: existentuser._id,
+              };
+              const SECRET = process.env.ACCESS_TOKEN_SECRET;
+              const accessToken = jwt.sign({ user }, SECRET, {
+                expiresIn: "7d",
+              });
+              user.accessToken = accessToken;
+
               return user;
             }
           }

@@ -7,7 +7,12 @@ const schema = require("./schema/schema");
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    credentials: true,
+    origin: "http://localhost:3000",
+  })
+);
 app.use(express.json());
 
 mongoose.connect(process.env.MONGODB_TOKEN, {
