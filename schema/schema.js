@@ -2,6 +2,7 @@ const graphql = require("graphql");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const Product = require("../models/product");
 
 const {
   GraphQLObjectType,
@@ -11,6 +12,7 @@ const {
   GraphQLList,
   GraphQLSchema,
   GraphQLNonNull,
+  GraphQLFloat,
 } = graphql;
 
 const UserType = new GraphQLObjectType({
@@ -28,6 +30,17 @@ const AccessType = new GraphQLObjectType({
   name: "Access",
   fields: () => ({
     accessToken: { type: GraphQLString },
+  }),
+});
+
+const ProductType = new GraphQLObjectType({
+  name: "Product",
+  fields: () => ({
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+    type: { type: GraphQLString },
+    price: { type: GraphQLFloat },
+    img: { type: GraphQLString },
   }),
 });
 
@@ -55,6 +68,12 @@ const RootQuery = new GraphQLObjectType({
           }
         );
         return user;
+      },
+    },
+    products: {
+      type: new GraphQLList(ProductType),
+      resolve() {
+        return Product.find({});
       },
     },
   }),
@@ -118,6 +137,35 @@ const Mutation = new GraphQLObjectType({
             }
           }
         } catch (error) {}
+      },
+    },
+    addProduct: {
+      type: ProductType,
+      args: {
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        type: { type: new GraphQLNonNull(GraphQLString) },
+        price: { type: new GraphQLNonNull(GraphQLFloat) },
+        img: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, args) {
+        const { name, type, price, img } = args;
+        const existentProduct = await Product.findOne({ name });
+        try {
+          if (!existentProduct) {
+            let product = new Product({
+              name,
+              type,
+              price,
+              img,
+            });
+
+            return await product.save();
+          } else {
+            return null;
+          }
+        } catch (error) {
+          return { error: error };
+        }
       },
     },
   },
