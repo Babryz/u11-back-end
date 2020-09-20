@@ -288,6 +288,8 @@ const Mutation = new GraphQLObjectType({
           date: new Date(),
           items: user.cart,
         });
+        user.cart = [];
+        user.save();
 
         return order.save();
       },
