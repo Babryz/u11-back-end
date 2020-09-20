@@ -76,6 +76,15 @@ const RootQuery = new GraphQLObjectType({
         return Product.find({});
       },
     },
+    searchProducts: {
+      type: new GraphQLList(ProductType),
+      args: {
+        name: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parent, args) {
+        return Product.find({ name: { $regex: args.name, $options: "i" } });
+      },
+    },
   }),
 });
 
