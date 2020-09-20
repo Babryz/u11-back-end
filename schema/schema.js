@@ -13,6 +13,7 @@ const {
   GraphQLSchema,
   GraphQLNonNull,
   GraphQLFloat,
+  GraphQLInt,
 } = graphql;
 
 const UserType = new GraphQLObjectType({
@@ -22,6 +23,7 @@ const UserType = new GraphQLObjectType({
     username: { type: GraphQLString },
     email: { type: GraphQLString },
     admin: { type: GraphQLBoolean },
+    cart: { type: GraphQLList(CartType) },
     accessToken: { type: GraphQLString },
   }),
 });
@@ -41,6 +43,16 @@ const ProductType = new GraphQLObjectType({
     type: { type: GraphQLString },
     price: { type: GraphQLFloat },
     img: { type: GraphQLString },
+  }),
+});
+
+const CartType = new GraphQLObjectType({
+  name: "Cart",
+  fields: () => ({
+    id: { type: GraphQLID },
+    name: { type: GraphQLString },
+    price: { type: GraphQLFloat },
+    quantity: { type: GraphQLInt },
   }),
 });
 
@@ -210,6 +222,29 @@ const Mutation = new GraphQLObjectType({
         } catch (error) {
           return { error: error };
         }
+      },
+    },
+    addToCart: {
+      type: UserType,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLID) },
+        itemId: { type: new GraphQLNonNull(GraphQLID) },
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        price: { type: new GraphQLNonNull(GraphQLFloat) },
+        quantity: { type: new GraphQLNonNull(GraphQLInt) },
+      },
+      async resolve(parent, args) {
+        const { id, itemId, name, price, quantity } = args;
+        const user = await User.findById(id);
+
+        const cartItem = {
+          itemId,
+          name,
+          price,
+          quantity,
+        };
+        user.cart.push(cartItem);
+        return user.save();
       },
     },
   },
