@@ -42,7 +42,20 @@ const RootQuery = new GraphQLObjectType({
     },
     user: {
       type: UserType,
-      resolve(parent, args) {},
+      args: {
+        accessToken: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      resolve(parent, args) {
+        let user = {};
+        jwt.verify(
+          args.accessToken,
+          process.env.ACCESS_TOKEN_SECRET,
+          (err, authData) => {
+            user = User.findById(authData.user.id);
+          }
+        );
+        return user;
+      },
     },
   }),
 });
