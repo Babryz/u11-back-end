@@ -256,6 +256,15 @@ const Mutation = new GraphQLObjectType({
         return user;
       },
     },
+    deleteCart: {
+      type: UserType,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLID) },
+      },
+      resolve(parent, args) {
+        return User.findByIdAndUpdate(args.id, { cart: [] }, { new: true });
+      },
+    },
   },
 });
 
