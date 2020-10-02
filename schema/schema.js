@@ -275,10 +275,32 @@ const Mutation = new GraphQLObjectType({
             itemId,
             name,
             price,
+            quantity: 1,
           };
           user.cart.push(cartItem);
         }
 
+        user.save();
+        return user;
+      },
+    },
+    removeCartItem: {
+      type: UserType,
+      args: {
+        accessToken: { type: new GraphQLNonNull(GraphQLString) },
+        itemId: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, args) {
+        const user = await jwt.verify(
+          args.accessToken,
+          process.env.ACCESS_TOKEN_SECRET,
+          (err, authData) => {
+            let user = User.findById(authData.user.id);
+            return user;
+          }
+        );
+
+        user.cart = user.cart.filter((item) => item.itemId !== args.itemId);
         return user.save();
       },
     },
