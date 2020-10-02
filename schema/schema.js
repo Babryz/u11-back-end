@@ -255,17 +255,16 @@ const Mutation = new GraphQLObjectType({
       },
       async resolve(parent, args) {
         const { itemId, name, price } = args;
-        let user = {};
-        jwt.verify(
+        const user = await jwt.verify(
           args.accessToken,
           process.env.ACCESS_TOKEN_SECRET,
           (err, authData) => {
-            return (user = User.findById(authData.user.id));
+            let user = User.findById(authData.user.id);
+            return user;
           }
         );
-        return user;
 
-        const alreadyInCart = await user.cart.filter(
+        const alreadyInCart = user.cart.filter(
           (item) => item.itemId === itemId
         );
 
@@ -276,7 +275,6 @@ const Mutation = new GraphQLObjectType({
             itemId,
             name,
             price,
-            quantity,
           };
           user.cart.push(cartItem);
         }
