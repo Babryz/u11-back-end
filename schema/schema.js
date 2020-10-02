@@ -23,9 +23,9 @@ const UserType = new GraphQLObjectType({
     id: { type: GraphQLID },
     username: { type: GraphQLString },
     email: { type: GraphQLString },
+    password: { type: GraphQLString },
     admin: { type: GraphQLBoolean },
     cart: { type: GraphQLList(CartType) },
-    accessToken: { type: GraphQLString },
   }),
 });
 
@@ -91,6 +91,15 @@ const RootQuery = new GraphQLObjectType({
           }
         );
         return user;
+      },
+    },
+    userById: {
+      type: UserType,
+      args: {
+        id: { type: new GraphQLNonNull(GraphQLID) },
+      },
+      resolve(parent, args) {
+        return (user = User.findById(args.id));
       },
     },
     products: {
@@ -238,16 +247,25 @@ const Mutation = new GraphQLObjectType({
     addToCart: {
       type: UserType,
       args: {
-        id: { type: new GraphQLNonNull(GraphQLID) },
+        accessToken: { type: new GraphQLNonNull(GraphQLString) },
         itemId: { type: new GraphQLNonNull(GraphQLID) },
         name: { type: new GraphQLNonNull(GraphQLString) },
         price: { type: new GraphQLNonNull(GraphQLFloat) },
-        quantity: { type: new GraphQLNonNull(GraphQLInt) },
+        // quantity: { type: new GraphQLNonNull(GraphQLInt) },
       },
       async resolve(parent, args) {
-        const { id, itemId, name, price, quantity } = args;
-        const user = await User.findById(id);
-        const alreadyInCart = user.cart.filter(
+        const { itemId, name, price } = args;
+        let user = {};
+        jwt.verify(
+          args.accessToken,
+          process.env.ACCESS_TOKEN_SECRET,
+          (err, authData) => {
+            return User.findById({ id: authData.user.id });
+          }
+        );
+        return user;
+
+        const alreadyInCart = await user.cart.filter(
           (item) => item.itemId === itemId
         );
 
