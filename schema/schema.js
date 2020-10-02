@@ -260,7 +260,7 @@ const Mutation = new GraphQLObjectType({
           args.accessToken,
           process.env.ACCESS_TOKEN_SECRET,
           (err, authData) => {
-            return User.findById({ id: authData.user.id });
+            return (user = User.findById(authData.user.id));
           }
         );
         return user;
