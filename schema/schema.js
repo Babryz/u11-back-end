@@ -50,7 +50,7 @@ const ProductType = new GraphQLObjectType({
 const CartType = new GraphQLObjectType({
   name: "Cart",
   fields: () => ({
-    id: { type: GraphQLID },
+    itemId: { type: GraphQLID },
     name: { type: GraphQLString },
     price: { type: GraphQLFloat },
     quantity: { type: GraphQLInt },
@@ -111,10 +111,35 @@ const RootQuery = new GraphQLObjectType({
     searchProducts: {
       type: new GraphQLList(ProductType),
       args: {
-        name: { type: new GraphQLNonNull(GraphQLString) },
+        searchTerm: { type: new GraphQLNonNull(GraphQLString) },
       },
       resolve(parent, args) {
-        return Product.find({ name: { $regex: args.name, $options: "i" } });
+        return Product.find({
+          name: { $regex: args.searchTerm, $options: "i" },
+        });
+      },
+    },
+    order: {
+      type: OrderType,
+      args: {
+        accessToken: { type: new GraphQLNonNull(GraphQLString) },
+      },
+      async resolve(parent, args) {
+        const user = await jwt.verify(
+          args.accessToken,
+          process.env.ACCESS_TOKEN_SECRET,
+          (err, authData) => {
+            let user = User.findById(authData.user.id);
+            return user;
+          }
+        );
+
+        const order = Order.findOne(
+          { userId: user.id },
+          {},
+          { sort: { date: -1 } }
+        );
+        return order;
       },
     },
   }),
@@ -288,7 +313,7 @@ const Mutation = new GraphQLObjectType({
       type: UserType,
       args: {
         accessToken: { type: new GraphQLNonNull(GraphQLString) },
-        itemId: { type: new GraphQLNonNull(GraphQLString) },
+        itemId: { type: new GraphQLNonNull(GraphQLID) },
       },
       async resolve(parent, args) {
         const user = await jwt.verify(
@@ -316,10 +341,17 @@ const Mutation = new GraphQLObjectType({
     order: {
       type: OrderType,
       args: {
-        userId: { type: new GraphQLNonNull(GraphQLID) },
+        accessToken: { type: new GraphQLNonNull(GraphQLString) },
       },
       async resolve(parent, args) {
-        const user = await User.findById(args.userId);
+        const user = await jwt.verify(
+          args.accessToken,
+          process.env.ACCESS_TOKEN_SECRET,
+          (err, authData) => {
+            let user = User.findById(authData.user.id);
+            return user;
+          }
+        );
 
         let order = new Order({
           userId: user.id,
