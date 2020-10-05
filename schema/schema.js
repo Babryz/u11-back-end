@@ -353,9 +353,19 @@ const Mutation = new GraphQLObjectType({
           }
         );
 
+        let now = new Date();
+        let day = now.getDate();
+        if (parseInt(now.getDate(), 10) < 10) {
+          day = `0${now.getDate()}`;
+        }
+
+        console.log(day);
+
         let order = new Order({
           userId: user.id,
-          date: new Date(),
+          date: `${now.getFullYear()}${
+            now.getMonth() + 1
+          }${day}${now.getTime()}`,
           items: user.cart,
         });
         user.cart = [];
