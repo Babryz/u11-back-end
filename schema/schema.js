@@ -359,8 +359,6 @@ const Mutation = new GraphQLObjectType({
           day = `0${now.getDate()}`;
         }
 
-        console.log(day);
-
         let order = new Order({
           userId: user.id,
           date: `${now.getFullYear()}${
